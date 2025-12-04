@@ -23,8 +23,9 @@ function Caja() {
     const today = new Date().toISOString().split('T')[0];
 
     useEffect(() => {
-        checkCaja();
-    }, []);
+        checkUser();
+    }, [checkUser]);
+
 
     const checkCaja = async () => {
         try {

@@ -17,7 +17,8 @@ function App() {
 
   useEffect(() => {
     checkUser();
-  }, []);
+  }, [checkUser]);
+
 
   const checkUser = async () => {
     const { data } = await authService.getSession();
