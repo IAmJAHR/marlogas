@@ -24,7 +24,7 @@ function Caja() {
 
     useEffect(() => {
         checkCaja();
-    }, [checkCaja]);
+    }, []);
 
     const checkCaja = async () => {
         try {

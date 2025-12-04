@@ -16,8 +16,16 @@ function App() {
   const authService = AuthService.getInstance();
 
   useEffect(() => {
+    const checkUser = async () => {
+      const { data } = await authService.getSession();
+      if (data.session) {
+        setUser(data.session.user);
+      }
+    };
+
     checkUser();
-  }, []);
+  }, []); // importante
+
 
 
   const checkUser = async () => {

@@ -44,7 +44,7 @@ function RegistrarDespacho() {
         if (activeTab === 'listado') {
             fetchDespachos();
         }
-    }, [activeTab, filterDate]);
+    }, [activeTab, filterDate, fetchDespachos]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
