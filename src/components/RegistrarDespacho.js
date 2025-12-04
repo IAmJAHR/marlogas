@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
 import DespachoService from '../services/DespachoService';
 import '../styles/RegistrarDespacho.css';
@@ -23,7 +23,7 @@ function RegistrarDespacho() {
 
     const despachoService = DespachoService.getInstance();
 
-    const fetchDespachos = async () => {
+    const fetchDespachos = useCallback(async () => {
         try {
             setLoading(true);
             const data = await despachoService.getDespachosByDate(filterDate);
@@ -38,14 +38,13 @@ function RegistrarDespacho() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [despachoService, filterDate]);
 
     useEffect(() => {
         if (activeTab === 'listado') {
             fetchDespachos();
         }
     }, [activeTab, filterDate, fetchDespachos]);
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({

@@ -24,16 +24,8 @@ function App() {
     };
 
     checkUser();
-  }, []); // importante
-
-
-
-  const checkUser = async () => {
-    const { data } = await authService.getSession();
-    if (data.session) {
-      setUser(data.session.user);
-    }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // solo se ejecuta 1 vez
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -104,7 +96,9 @@ function App() {
       <Sidebar onNavigate={setCurrentView} onLogout={handleLogout} />
       <div className="content">
         <div className="header">
-          <span>Bienvenido, <strong>{user.username || 'Usuario'}</strong></span>
+          <span>
+            Bienvenido, <strong>{user.username || 'Usuario'}</strong>
+          </span>
         </div>
         {renderContent()}
       </div>

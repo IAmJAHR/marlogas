@@ -23,26 +23,28 @@ function Caja() {
     const today = new Date().toISOString().split('T')[0];
 
     useEffect(() => {
+        const checkCaja = async () => {
+            try {
+                setLoading(true);
+                const data = await cajaService.checkCajaDelDia(today);
+                if (data) {
+                    setCaja(data);
+                    fetchDespachos(data.monto_inicial);
+                } else {
+                    setCaja(null);
+                }
+            } catch (error) {
+                console.error('Error checking caja:', error);
+                Swal.fire('Error', 'No se pudo verificar el estado de la caja', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
         checkCaja();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const checkCaja = async () => {
-        try {
-            setLoading(true);
-            const data = await cajaService.checkCajaDelDia(today);
-            if (data) {
-                setCaja(data);
-                fetchDespachos(data.monto_inicial);
-            } else {
-                setCaja(null);
-            }
-        } catch (error) {
-            console.error('Error checking caja:', error);
-            Swal.fire('Error', 'No se pudo verificar el estado de la caja', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const fetchDespachos = async (montoInicialVal) => {
         try {
