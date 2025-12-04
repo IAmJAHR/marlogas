@@ -6,8 +6,8 @@ class AuthService {
             return AuthService.instance;
         }
 
-        const supabaseUrl = 'https://ccwfuxcnfqxetturkufs.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjd2Z1eGNuZnF4ZXR0dXJrdWZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTkzMTUsImV4cCI6MjA4MDQzNTMxNX0._yulZSjt_DMKABf27rZNNMFbw_Nmkau5hvLCE6UQjkQ';
+        const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+        const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
         this.supabase = createClient(supabaseUrl, supabaseAnonKey);
         AuthService.instance = this;
