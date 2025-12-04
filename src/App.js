@@ -17,7 +17,7 @@ function App() {
 
   useEffect(() => {
     checkUser();
-  }, [checkUser]);
+  }, []);
 
 
   const checkUser = async () => {
