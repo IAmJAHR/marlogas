@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import RegistrarDespacho from './components/RegistrarDespacho';
 import Caja from './components/Caja';
+import Reportes from './components/Reportes';
 import './styles/Layout.css';
 
 function App() {
@@ -58,6 +59,8 @@ function App() {
         return <RegistrarDespacho />;
       case 'caja':
         return <Caja />;
+      case 'reportes':
+        return <Reportes />;
       default:
         return <Dashboard />;
     }
