@@ -96,7 +96,7 @@ function App() {
   }
 
   return (
-    <div className="layout">
+    <div className={`layout ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <Sidebar
         onNavigate={setCurrentView}
         onLogout={handleLogout}

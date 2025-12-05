@@ -15,7 +15,14 @@ body {
     flex: 1;
     background-color: #f9fafb;
     padding: 30px;
+    padding-left: 90px;
+    margin-left: 260px;
     overflow-y: auto;
+    transition: margin-left 0.3s ease;
+}
+
+.layout.sidebar-closed .content {
+    margin-left: 0;
 }
 
 .header {
@@ -124,4 +131,16 @@ body {
 
 .btn-danger:hover {
     background-color: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .content {
+        padding: 20px;
+        padding-left: 70px;
+    }
+
+    .layout.sidebar-open .content {
+        margin-left: 220px;
+    }
 }
