@@ -13,6 +13,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const authService = AuthService.getInstance();
 
@@ -96,7 +97,12 @@ function App() {
 
   return (
     <div className="layout">
-      <Sidebar onNavigate={setCurrentView} onLogout={handleLogout} />
+      <Sidebar
+        onNavigate={setCurrentView}
+        onLogout={handleLogout}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
       <div className="content">
         <div className="header">
           <span>

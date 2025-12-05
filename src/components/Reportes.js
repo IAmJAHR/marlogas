@@ -54,9 +54,11 @@ function Reportes() {
 
         data.forEach(despacho => {
             const precio = parseFloat(despacho.precio) || 0;
-            if (despacho.metodo_pago === 'efectivo') {
+            const metodoPago = (despacho.metodo_pago || '').toLowerCase();
+
+            if (metodoPago === 'efectivo') {
                 totalEfectivo += precio;
-            } else if (despacho.metodo_pago === 'yape') {
+            } else if (metodoPago === 'yape') {
                 totalYape += precio;
             }
         });
