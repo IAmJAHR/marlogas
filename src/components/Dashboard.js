@@ -45,11 +45,13 @@ function Dashboard() {
 
                 data.forEach(despacho => {
                     const precio = parseFloat(despacho.precio) || 0;
+                    const metodoPago = (despacho.metodo_pago || '').toLowerCase();
+
                     totalVendido += precio;
 
-                    if (despacho.metodo_pago === 'yape') {
+                    if (metodoPago === 'yape') {
                         totalYape += precio;
-                    } else if (despacho.metodo_pago === 'efectivo') {
+                    } else if (metodoPago === 'efectivo') {
                         totalEfectivo += precio;
                     }
                 });
