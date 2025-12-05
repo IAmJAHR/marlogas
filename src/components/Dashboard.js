@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import AuthService from '../services/AuthService';
 import '../styles/Dashboard.css';
 
 function Dashboard() {
+    const supabase = AuthService.getInstance().getSupabase();
     const [totales, setTotales] = useState({
         totalVendido: 0,
         totalYape: 0,
@@ -26,6 +27,7 @@ function Dashboard() {
         return () => {
             subscription.unsubscribe();
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchTotales = async () => {

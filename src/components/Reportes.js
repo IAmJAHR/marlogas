@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import AuthService from '../services/AuthService';
 import jsPDF from 'jspdf';
 import '../styles/Reportes.css';
 
 function Reportes() {
+    const supabase = AuthService.getInstance().getSupabase();
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
     const [despachos, setDespachos] = useState([]);
