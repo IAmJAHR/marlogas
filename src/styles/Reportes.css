@@ -11,7 +11,7 @@
     display: flex;
     gap: 20px;
     align-items: flex-end;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     padding: 20px;
     background: #f8f9fa;
     border-radius: 8px;
@@ -65,6 +65,39 @@
     transform: translateY(0);
 }
 
+/* Product Type Filters */
+.producto-filtros {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filtro-btn {
+    padding: 10px 20px;
+    border: 2px solid #dee2e6;
+    background: white;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #495057;
+}
+
+.filtro-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+.filtro-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+}
+
 .totales-resumen {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -111,11 +144,57 @@
     color: white;
 }
 
+/* DataTable Controls */
+.datatable-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.datatable-info {
+    font-size: 14px;
+    color: #495057;
+    font-weight: 500;
+}
+
+.datatable-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.datatable-search label {
+    font-size: 14px;
+    color: #495057;
+    font-weight: 600;
+}
+
+.search-input {
+    padding: 8px 15px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    min-width: 250px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
 .tabla-container {
     background: white;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    margin-bottom: 20px;
 }
 
 .tabla-despachos {
@@ -135,6 +214,7 @@
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    user-select: none;
 }
 
 .tabla-despachos tbody tr {
@@ -144,6 +224,10 @@
 
 .tabla-despachos tbody tr:hover {
     background-color: #f8f9fa;
+}
+
+.tabla-despachos tbody tr:last-child {
+    border-bottom: none;
 }
 
 .tabla-despachos td {
@@ -160,14 +244,68 @@
     text-transform: uppercase;
 }
 
-.badge.efectivo {
+.badge.Efectivo {
     background: #ffeaa7;
     color: #d63031;
 }
 
-.badge.yape {
+.badge.Yape {
     background: #74b9ff;
     color: #0984e3;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pagination-numbers {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.pagination-btn {
+    padding: 8px 15px;
+    border: 2px solid #dee2e6;
+    background: white;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #495057;
+    min-width: 45px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+.pagination-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-ellipsis {
+    padding: 8px 5px;
+    color: #495057;
+    font-weight: 600;
 }
 
 /* Responsive */
@@ -175,6 +313,30 @@
     .filtros-container {
         flex-direction: column;
         align-items: stretch;
+    }
+    
+    .producto-filtros {
+        flex-direction: column;
+    }
+    
+    .filtro-btn {
+        width: 100%;
+    }
+    
+    .datatable-controls {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .datatable-search {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-input {
+        width: 100%;
+        min-width: auto;
     }
     
     .tabla-container {
@@ -188,5 +350,13 @@
     .tabla-despachos th,
     .tabla-despachos td {
         padding: 10px;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+    }
+    
+    .pagination-numbers {
+        flex-wrap: wrap;
     }
 }

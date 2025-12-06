@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AuthService from '../services/AuthService';
 import jsPDF from 'jspdf';
 import '../styles/Reportes.css';
@@ -8,14 +8,13 @@ function Reportes() {
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
     const [despachos, setDespachos] = useState([]);
-    const [totales, setTotales] = useState({
-        totalEfectivo: 0,
-        totalYape: 0,
-        totalVentas: 0
-    });
+    const [tipoProducto, setTipoProducto] = useState('todos');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+    const [sortConfig, setSortConfig] = useState({ key: 'fecha_despacho', direction: 'desc' });
 
     useEffect(() => {
-        // Establecer fechas por defecto (hoy)
         const today = new Date().toISOString().split('T')[0];
         setFechaInicio(today);
         setFechaFin(today);
@@ -41,18 +40,63 @@ function Reportes() {
 
             if (data) {
                 setDespachos(data);
-                calcularTotales(data);
             }
         } catch (error) {
             console.error('Error al obtener despachos:', error);
         }
     };
 
-    const calcularTotales = (data) => {
+    // Filter and sort data
+    const filteredDespachos = useMemo(() => {
+        let filtered = [...despachos];
+
+        // Filter by product type
+        if (tipoProducto === 'agua') {
+            filtered = filtered.filter(d => d.agua > 0 && d.gas === 0);
+        } else if (tipoProducto === 'gas') {
+            filtered = filtered.filter(d => d.gas > 0 && d.agua === 0);
+        } else if (tipoProducto === 'ambos') {
+            filtered = filtered.filter(d => d.agua > 0 && d.gas > 0);
+        }
+        // 'todos' shows all records
+
+        // Filter by search term
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(d =>
+                (d.cliente || '').toLowerCase().includes(term) ||
+                (d.direccion || '').toLowerCase().includes(term) ||
+                (d.observaciones || '').toLowerCase().includes(term)
+            );
+        }
+
+        // Sort
+        if (sortConfig.key) {
+            filtered.sort((a, b) => {
+                let aVal = a[sortConfig.key];
+                let bVal = b[sortConfig.key];
+
+                // Handle numeric values
+                if (sortConfig.key === 'precio' || sortConfig.key === 'gas' || sortConfig.key === 'agua') {
+                    aVal = parseFloat(aVal) || 0;
+                    bVal = parseFloat(bVal) || 0;
+                }
+
+                if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        return filtered;
+    }, [despachos, tipoProducto, searchTerm, sortConfig]);
+
+    // Calculate totals from filtered data
+    const totales = useMemo(() => {
         let totalEfectivo = 0;
         let totalYape = 0;
 
-        data.forEach(despacho => {
+        filteredDespachos.forEach(despacho => {
             const precio = parseFloat(despacho.precio) || 0;
             const metodoPago = (despacho.metodo_pago || '').toLowerCase();
 
@@ -63,11 +107,29 @@ function Reportes() {
             }
         });
 
-        setTotales({
+        return {
             totalEfectivo,
             totalYape,
             totalVentas: totalEfectivo + totalYape
-        });
+        };
+    }, [filteredDespachos]);
+
+    // Pagination
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredDespachos.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredDespachos.length / itemsPerPage);
+
+    const handleSort = (key) => {
+        setSortConfig(prev => ({
+            key,
+            direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+        }));
+    };
+
+    const getSortIndicator = (key) => {
+        if (sortConfig.key !== key) return ' ⇅';
+        return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
     };
 
     const exportarPDF = () => {
@@ -77,18 +139,23 @@ function Reportes() {
         doc.setFontSize(18);
         doc.text('REPORTE DE VENTAS MARLOGAS', 105, 20, { align: 'center' });
 
-        // Fechas
+        // Fechas y filtros
         doc.setFontSize(12);
         doc.text(`Fecha Inicio: ${fechaInicio}`, 20, 35);
         doc.text(`Fecha Fin: ${fechaFin}`, 20, 42);
 
+        const tipoTexto = tipoProducto === 'agua' ? 'Solo Agua' :
+            tipoProducto === 'gas' ? 'Solo Gas' :
+                tipoProducto === 'ambos' ? 'Ambos (Agua y Gas)' : 'Todos';
+        doc.text(`Tipo: ${tipoTexto}`, 20, 49);
+
         // Línea separadora
-        doc.line(20, 47, 190, 47);
+        doc.line(20, 54, 190, 54);
 
         // Encabezados de tabla
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
-        let y = 55;
+        let y = 62;
         doc.text('Fecha', 20, y);
         doc.text('Cliente', 50, y);
         doc.text('Gas', 90, y);
@@ -96,11 +163,11 @@ function Reportes() {
         doc.text('Precio', 130, y);
         doc.text('Método', 155, y);
 
-        // Despachos
+        // Despachos filtrados
         doc.setFont(undefined, 'normal');
         y += 7;
 
-        despachos.forEach((despacho, index) => {
+        filteredDespachos.forEach((despacho) => {
             if (y > 270) {
                 doc.addPage();
                 y = 20;
@@ -132,7 +199,8 @@ function Reportes() {
         doc.text(`TOTAL VENTAS: S/ ${totales.totalVentas.toFixed(2)}`, 20, y);
 
         // Guardar PDF
-        doc.save(`reporte_ventas_${fechaInicio}_${fechaFin}.pdf`);
+        const tipoArchivo = tipoProducto === 'todos' ? 'todos' : tipoProducto;
+        doc.save(`reporte_${tipoArchivo}_${fechaInicio}_${fechaFin}.pdf`);
     };
 
     return (
@@ -165,6 +233,34 @@ function Reportes() {
                 </button>
             </div>
 
+            {/* Product Type Filter */}
+            <div className="producto-filtros">
+                <button
+                    className={`filtro-btn ${tipoProducto === 'todos' ? 'active' : ''}`}
+                    onClick={() => { setTipoProducto('todos'); setCurrentPage(1); }}
+                >
+                    Todos
+                </button>
+                <button
+                    className={`filtro-btn ${tipoProducto === 'agua' ? 'active' : ''}`}
+                    onClick={() => { setTipoProducto('agua'); setCurrentPage(1); }}
+                >
+                    Solo Agua
+                </button>
+                <button
+                    className={`filtro-btn ${tipoProducto === 'gas' ? 'active' : ''}`}
+                    onClick={() => { setTipoProducto('gas'); setCurrentPage(1); }}
+                >
+                    Solo Gas
+                </button>
+                <button
+                    className={`filtro-btn ${tipoProducto === 'ambos' ? 'active' : ''}`}
+                    onClick={() => { setTipoProducto('ambos'); setCurrentPage(1); }}
+                >
+                    Ambos (Agua y Gas)
+                </button>
+            </div>
+
             <div className="totales-resumen">
                 <div className="total-card efectivo">
                     <h4>Total Efectivo</h4>
@@ -180,29 +276,61 @@ function Reportes() {
                 </div>
             </div>
 
+            {/* Search and Info */}
+            <div className="datatable-controls">
+                <div className="datatable-info">
+                    Mostrando {indexOfFirstItem + 1} a {Math.min(indexOfLastItem, filteredDespachos.length)} de {filteredDespachos.length} registros
+                    {filteredDespachos.length !== despachos.length && ` (filtrados de ${despachos.length} totales)`}
+                </div>
+                <div className="datatable-search">
+                    <label>Buscar: </label>
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        placeholder="Cliente, dirección, observaciones..."
+                        className="search-input"
+                    />
+                </div>
+            </div>
+
             <div className="tabla-container">
                 <table className="tabla-despachos">
                     <thead>
                         <tr>
-                            <th>Fecha</th>
-                            <th>Cliente</th>
-                            <th>Dirección</th>
-                            <th>Gas</th>
-                            <th>Agua</th>
-                            <th>Precio</th>
-                            <th>Método Pago</th>
+                            <th onClick={() => handleSort('fecha_despacho')} style={{ cursor: 'pointer' }}>
+                                Fecha{getSortIndicator('fecha_despacho')}
+                            </th>
+                            <th onClick={() => handleSort('cliente')} style={{ cursor: 'pointer' }}>
+                                Cliente{getSortIndicator('cliente')}
+                            </th>
+                            <th onClick={() => handleSort('direccion')} style={{ cursor: 'pointer' }}>
+                                Dirección{getSortIndicator('direccion')}
+                            </th>
+                            <th onClick={() => handleSort('gas')} style={{ cursor: 'pointer' }}>
+                                Gas{getSortIndicator('gas')}
+                            </th>
+                            <th onClick={() => handleSort('agua')} style={{ cursor: 'pointer' }}>
+                                Agua{getSortIndicator('agua')}
+                            </th>
+                            <th onClick={() => handleSort('precio')} style={{ cursor: 'pointer' }}>
+                                Precio{getSortIndicator('precio')}
+                            </th>
+                            <th onClick={() => handleSort('metodo_pago')} style={{ cursor: 'pointer' }}>
+                                Método Pago{getSortIndicator('metodo_pago')}
+                            </th>
                             <th>Observaciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {despachos.length === 0 ? (
+                        {currentItems.length === 0 ? (
                             <tr>
                                 <td colSpan="8" style={{ textAlign: 'center' }}>
-                                    No hay despachos en este rango de fechas
+                                    No hay despachos que coincidan con los filtros
                                 </td>
                             </tr>
                         ) : (
-                            despachos.map((despacho) => (
+                            currentItems.map((despacho) => (
                                 <tr key={despacho.id}>
                                     <td>{despacho.fecha_despacho || new Date(despacho.creado_en).toLocaleDateString('es-PE')}</td>
                                     <td>{despacho.cliente}</td>
@@ -222,6 +350,52 @@ function Reportes() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="pagination">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="pagination-btn"
+                    >
+                        Anterior
+                    </button>
+
+                    <div className="pagination-numbers">
+                        {[...Array(totalPages)].map((_, index) => {
+                            const pageNum = index + 1;
+                            // Show first, last, current, and adjacent pages
+                            if (
+                                pageNum === 1 ||
+                                pageNum === totalPages ||
+                                (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                            ) {
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        className={`pagination-btn ${currentPage === pageNum ? 'active' : ''}`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                );
+                            } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                                return <span key={pageNum} className="pagination-ellipsis">...</span>;
+                            }
+                            return null;
+                        })}
+                    </div>
+
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="pagination-btn"
+                    >
+                        Siguiente
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
