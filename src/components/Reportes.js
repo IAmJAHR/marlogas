@@ -152,16 +152,31 @@ function Reportes() {
         // Línea separadora
         doc.line(20, 54, 190, 54);
 
-        // Encabezados de tabla
+        // Encabezados de tabla - dinámicos según el filtro
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         let y = 62;
         doc.text('Fecha', 20, y);
         doc.text('Cliente', 50, y);
-        doc.text('Gas', 90, y);
-        doc.text('Agua', 110, y);
-        doc.text('Precio', 130, y);
-        doc.text('Método', 155, y);
+
+        // Mostrar columnas según el tipo de producto
+        if (tipoProducto === 'agua') {
+            // Solo mostrar Agua
+            doc.text('Agua', 90, y);
+            doc.text('Precio', 120, y);
+            doc.text('Método', 150, y);
+        } else if (tipoProducto === 'gas') {
+            // Solo mostrar Gas
+            doc.text('Gas', 90, y);
+            doc.text('Precio', 120, y);
+            doc.text('Método', 150, y);
+        } else {
+            // Mostrar ambas columnas (para 'ambos' y 'todos')
+            doc.text('Gas', 90, y);
+            doc.text('Agua', 110, y);
+            doc.text('Precio', 130, y);
+            doc.text('Método', 155, y);
+        }
 
         // Despachos filtrados
         doc.setFont(undefined, 'normal');
@@ -176,10 +191,22 @@ function Reportes() {
             const fecha = despacho.fecha_despacho || new Date(despacho.creado_en).toLocaleDateString('es-PE');
             doc.text(fecha, 20, y);
             doc.text(despacho.cliente || '-', 50, y);
-            doc.text(despacho.gas?.toString() || '0', 90, y);
-            doc.text(despacho.agua?.toString() || '0', 110, y);
-            doc.text(`S/ ${parseFloat(despacho.precio).toFixed(2)}`, 130, y);
-            doc.text(despacho.metodo_pago || '-', 155, y);
+
+            // Datos según el tipo de producto
+            if (tipoProducto === 'agua') {
+                doc.text(despacho.agua?.toString() || '0', 90, y);
+                doc.text(`S/ ${parseFloat(despacho.precio).toFixed(2)}`, 120, y);
+                doc.text(despacho.metodo_pago || '-', 150, y);
+            } else if (tipoProducto === 'gas') {
+                doc.text(despacho.gas?.toString() || '0', 90, y);
+                doc.text(`S/ ${parseFloat(despacho.precio).toFixed(2)}`, 120, y);
+                doc.text(despacho.metodo_pago || '-', 150, y);
+            } else {
+                doc.text(despacho.gas?.toString() || '0', 90, y);
+                doc.text(despacho.agua?.toString() || '0', 110, y);
+                doc.text(`S/ ${parseFloat(despacho.precio).toFixed(2)}`, 130, y);
+                doc.text(despacho.metodo_pago || '-', 155, y);
+            }
 
             y += 7;
         });
