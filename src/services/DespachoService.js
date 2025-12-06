@@ -26,15 +26,10 @@ class DespachoService {
     }
 
     async getDespachosByDate(date) {
-        // Supabase stores timestamps, so we need to filter by range for the whole day
-        const startDate = `${date}T00:00:00`;
-        const endDate = `${date}T23:59:59`;
-
         const { data, error } = await this.supabase
             .from('despachos')
             .select('*')
-            .gte('creado_en', startDate)
-            .lte('creado_en', endDate)
+            .eq('fecha_despacho', date)
             .order('creado_en', { ascending: false });
 
         if (error) throw error;

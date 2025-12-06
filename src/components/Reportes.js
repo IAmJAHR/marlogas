@@ -33,9 +33,9 @@ function Reportes() {
             const { data, error } = await supabase
                 .from('despachos')
                 .select('*')
-                .gte('creado_en', `${fechaInicio}T00:00:00`)
-                .lte('creado_en', `${fechaFin}T23:59:59`)
-                .order('creado_en', { ascending: false });
+                .gte('fecha_despacho', fechaInicio)
+                .lte('fecha_despacho', fechaFin)
+                .order('fecha_despacho', { ascending: false });
 
             if (error) throw error;
 
@@ -106,7 +106,7 @@ function Reportes() {
                 y = 20;
             }
 
-            const fecha = new Date(despacho.creado_en).toLocaleDateString('es-PE');
+            const fecha = despacho.fecha_despacho || new Date(despacho.creado_en).toLocaleDateString('es-PE');
             doc.text(fecha, 20, y);
             doc.text(despacho.cliente || '-', 50, y);
             doc.text(despacho.gas?.toString() || '0', 90, y);
@@ -204,7 +204,7 @@ function Reportes() {
                         ) : (
                             despachos.map((despacho) => (
                                 <tr key={despacho.id}>
-                                    <td>{new Date(despacho.creado_en).toLocaleDateString('es-PE')}</td>
+                                    <td>{despacho.fecha_despacho || new Date(despacho.creado_en).toLocaleDateString('es-PE')}</td>
                                     <td>{despacho.cliente}</td>
                                     <td>{despacho.direccion}</td>
                                     <td>{despacho.gas}</td>

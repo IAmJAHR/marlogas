@@ -18,7 +18,8 @@ function RegistrarDespacho() {
         precio: '',
         metodo_pago: 'Efectivo',
         cilindro: 0,
-        observaciones: ''
+        observaciones: '',
+        fecha_despacho: new Date().toISOString().split('T')[0]
     });
 
     const despachoService = DespachoService.getInstance();
@@ -87,7 +88,8 @@ function RegistrarDespacho() {
                 precio: '',
                 metodo_pago: 'Efectivo',
                 cilindro: 0,
-                observaciones: ''
+                observaciones: '',
+                fecha_despacho: new Date().toISOString().split('T')[0]
             });
             setActiveTab('listado');
 
@@ -205,6 +207,17 @@ function RegistrarDespacho() {
                                 min="0"
                             />
                         </div>
+                        <div className="form-group">
+                            <label>Fecha de Despacho</label>
+                            <input
+                                type="date"
+                                name="fecha_despacho"
+                                value={formData.fecha_despacho}
+                                onChange={handleChange}
+                                required
+                                className="input-field"
+                            />
+                        </div>
                     </div>
 
                     <div className="form-group">
@@ -240,6 +253,7 @@ function RegistrarDespacho() {
                         <table className="data-table">
                             <thead>
                                 <tr>
+                                    <th>Fecha</th>
                                     <th>Cliente</th>
                                     <th>Dirección</th>
                                     <th>Gas</th>
@@ -253,13 +267,14 @@ function RegistrarDespacho() {
                             <tbody>
                                 {despachos.length === 0 ? (
                                     <tr>
-                                        <td colSpan="8" style={{ textAlign: 'center', padding: '30px', color: '#6b7280' }}>
+                                        <td colSpan="9" style={{ textAlign: 'center', padding: '30px', color: '#6b7280' }}>
                                             No hay despachos registrados para esta fecha.
                                         </td>
                                     </tr>
                                 ) : (
                                     despachos.map(d => (
                                         <tr key={d.id}>
+                                            <td>{d.fecha_despacho || new Date(d.creado_en).toLocaleDateString('es-PE')}</td>
                                             <td>{d.cliente}</td>
                                             <td>{d.direccion}</td>
                                             <td>{d.gas}</td>
