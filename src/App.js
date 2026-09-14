@@ -47,7 +47,7 @@ function App() {
   };
 
   const handleLogout = async () => {
-    await authService.supabase.auth.signOut();
+    await authService.logout();
     setUser(null);
     setCurrentView('dashboard');
   };

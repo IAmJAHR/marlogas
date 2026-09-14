@@ -4,7 +4,7 @@ import jsPDF from 'jspdf';
 import '../styles/Reportes.css';
 
 function Reportes() {
-    const supabase = AuthService.getInstance().getSupabase();
+    const db = AuthService.getInstance().getDb();
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
     const [despachos, setDespachos] = useState([]);
@@ -29,18 +29,25 @@ function Reportes() {
 
     const fetchDespachos = async () => {
         try {
-            const { data, error } = await supabase
-                .from('despachos')
-                .select('*')
-                .gte('fecha_despacho', fechaInicio)
-                .lte('fecha_despacho', fechaFin)
-                .order('fecha_despacho', { ascending: false });
+            const { collection, query, where, getDocs } = require('firebase/firestore');
+            const despachosRef = collection(db, 'despachos');
+            const q = query(
+                despachosRef, 
+                where('fecha_despacho', '>=', fechaInicio),
+                where('fecha_despacho', '<=', fechaFin)
+            );
+            const querySnapshot = await getDocs(q);
+            
+            let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // sort by fecha_despacho desc in memory
+            data.sort((a, b) => {
+                const dateA = new Date(a.fecha_despacho).getTime();
+                const dateB = new Date(b.fecha_despacho).getTime();
+                return dateB - dateA;
+            });
 
-            if (error) throw error;
-
-            if (data) {
-                setDespachos(data);
-            }
+            setDespachos(data);
         } catch (error) {
             console.error('Error al obtener despachos:', error);
         }

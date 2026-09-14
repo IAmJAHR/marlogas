@@ -1,11 +1,13 @@
 import AuthService from './AuthService';
+import { collection, query, where, getDocs, addDoc, updateDoc, doc, getDoc } from 'firebase/firestore';
 
 class CajaService {
     constructor() {
         if (CajaService.instance) {
             return CajaService.instance;
         }
-        this.supabase = AuthService.getInstance().getSupabase();
+        this.db = AuthService.getInstance().getDb();
+        this.cajasRef = collection(this.db, 'cajas');
         CajaService.instance = this;
     }
 
@@ -17,48 +19,39 @@ class CajaService {
     }
 
     async checkCajaDelDia(fecha) {
-        const { data, error } = await this.supabase
-            .from('cajas')
-            .select('*')
-            .eq('fecha', fecha)
-            .eq('status', 'aperturada')
-            .maybeSingle();
+        const q = query(this.cajasRef, where('fecha', '==', fecha), where('status', '==', 'aperturada'));
+        const querySnapshot = await getDocs(q);
 
-        if (error) throw error;
-        return data;
+        if (querySnapshot.empty) {
+            return null;
+        }
+        
+        const docData = querySnapshot.docs[0];
+        return { id: docData.id, ...docData.data() };
     }
 
     async aperturarCaja(montoInicial) {
         const fecha = new Date().toISOString().split('T')[0];
-        const { data, error } = await this.supabase
-            .from('cajas')
-            .insert([{
-                fecha: fecha,
-                monto_inicial: montoInicial,
-                status: 'aperturada'
-            }])
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+        const docRef = await addDoc(this.cajasRef, {
+            fecha: fecha,
+            monto_inicial: montoInicial,
+            status: 'aperturada'
+        });
+        
+        return { id: docRef.id, fecha: fecha, monto_inicial: montoInicial, status: 'aperturada' };
     }
 
     async cerrarCaja(id, datosCierre) {
-        const { data, error } = await this.supabase
-            .from('cajas')
-            .update({
-                total: datosCierre.total,
-                yape: datosCierre.yape,
-                efectivo: datosCierre.efectivo,
-                status: 'cerrada'
-            })
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+        const cajaDocRef = doc(this.db, 'cajas', id);
+        await updateDoc(cajaDocRef, {
+            total: datosCierre.total,
+            yape: datosCierre.yape,
+            efectivo: datosCierre.efectivo,
+            status: 'cerrada'
+        });
+        
+        const updatedDoc = await getDoc(cajaDocRef);
+        return { id: updatedDoc.id, ...updatedDoc.data() };
     }
 }
 

@@ -1,15 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+import { db } from '../firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 class AuthService {
     constructor() {
         if (AuthService.instance) {
             return AuthService.instance;
         }
-
-        const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-        const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-
-        this.supabase = createClient(supabaseUrl, supabaseAnonKey);
         AuthService.instance = this;
     }
 
@@ -21,23 +17,34 @@ class AuthService {
     }
 
     async login(username, password) {
-        const { data, error } = await this.supabase
-            .from('users')
-            .select('*')
-            .eq('username', username)
-            .eq('password', password)
-            .single();
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('username', '==', username), where('password', '==', password));
+        const querySnapshot = await getDocs(q);
 
-        if (error) throw error;
-        return data;
+        if (querySnapshot.empty) {
+            return null;
+        }
+        
+        const userData = querySnapshot.docs[0].data();
+        // Save to local storage to persist session
+        localStorage.setItem('user', JSON.stringify(userData));
+        return userData;
     }
 
     async getSession() {
-        return this.supabase.auth.getSession();
+        const user = localStorage.getItem('user');
+        if (user) {
+            return { data: { session: { user: JSON.parse(user) } } };
+        }
+        return { data: { session: null } };
     }
 
-    getSupabase() {
-        return this.supabase;
+    async logout() {
+        localStorage.removeItem('user');
+    }
+
+    getDb() {
+        return db;
     }
 }
 
